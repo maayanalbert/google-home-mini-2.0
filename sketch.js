@@ -57,7 +57,7 @@ function setup(){
   lang = navigator.language || 'en-US';
   speechRec = new p5.SpeechRec(lang);
   continuous = true;
-  interim = true;
+  interim = false;
   speechRec.start(continuous, interim);
   speechRec.resultString = "";
   speech.onEnd = speechEnded;
