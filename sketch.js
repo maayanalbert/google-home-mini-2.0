@@ -76,7 +76,7 @@ function drawMini(){
 function ParticleSystem(){
     this.bigParticles = [];
     this.myParticles = [];
-    this.nParticles = 300;
+    this.nParticles = 100;
     this.particleSize = 10;
     this.set = function(){
         for (var i = 0; i < this.nParticles; i++) {
@@ -84,7 +84,7 @@ function ParticleSystem(){
             var degree = random(0, 360);
             var rx = cos(degree)*distFromCenter + width/2; //random(width/4, width/4 *3);
             var ry = sin(degree)*distFromCenter + height/2; //random(height/4, height/4*3);
-            this.myParticles[i] = new Particle(rx, ry, random(9, 11));
+            this.myParticles[i] = new Particle(rx, ry, 20);
         }
     }
 
@@ -116,7 +116,7 @@ function ParticleSystem(){
                 var attractionForcex = mutualAttractionAmount * componentInX * proportionToDistanceSquared;
                 var attractionForcey = mutualAttractionAmount * componentInY * proportionToDistanceSquared;
 
-                if (dh > (ithParticle.size + jthParticle.size)/2 * 6) {
+                if (dh > (ithParticle.mass + jthParticle.mass)/2 * 1) {
                     ithParticle.addForce( attractionForcex,  attractionForcey); // add in forces
                     jthParticle.addForce(-attractionForcex, -attractionForcey); // add in forces
                 }else{
@@ -173,6 +173,7 @@ function Particle(x, y, mass){
         this.handleBoundaries();
         this.px-=this.vx;
         this.py-=this.vy;
+        //this.mass = this.size;
         if(abs(this.goalSize-this.size) > 1){
             if(this.goalSize> this.size){
                 this.size ++;
@@ -208,7 +209,11 @@ function Particle(x, y, mass){
         }
     }
     this.render=function(){
-        opacity = 80 -getDist(this.px, this.py, width/2, height/2) + this.size*this.size;
+        if(this.goalSize < 50){
+            opacity = 70 - getDist(this.px, this.py, width/2, height/2)/2;
+        }else{
+            opacity = this.size * this.size;
+        }
         fill(40, 140, 250, opacity);
         ellipse(this.px,this.py,this.size,this.size);
     }
@@ -221,13 +226,13 @@ function getDist(x1, y1, x2, y2){
 function mousePressed(){
     for(i = 0; i < particleSystem.bigParticles.length; i++){
         particle = particleSystem.bigParticles[i];
-        particle.goalSize = 10;
+        particle.goalSize = 20;
     }
 
 
     index = floor(random(0, particleSystem.nParticles));
     changingParticle = particleSystem.myParticles[index];
-    changingParticle.goalSize = 30;
+    changingParticle.goalSize = 50;
     particleSystem.bigParticles.push(changingParticle);
 }
 
