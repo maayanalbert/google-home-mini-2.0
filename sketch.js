@@ -76,7 +76,7 @@ function drawMini(){
 function ParticleSystem(){
     this.bigParticles = [];
     this.myParticles = [];
-    this.nParticles = 100;
+    this.nParticles = 400;
     this.particleSize = 10;
     this.set = function(){
         for (var i = 0; i < this.nParticles; i++) {
@@ -84,26 +84,29 @@ function ParticleSystem(){
             var degree = random(0, 360);
             var rx = cos(degree)*distFromCenter + width/2; //random(width/4, width/4 *3);
             var ry = sin(degree)*distFromCenter + height/2; //random(height/4, height/4*3);
-            this.myParticles[i] = new Particle(rx, ry, 20);
+            this.myParticles[i] = new Particle(rx, ry, random(9, 11));
         }
     }
 
     this.updateVelocities = function(){
         var gravityForcex = 0;
-        var gravityForcey = 0.05;
+        var gravityForcey = -1;
  
  
         for (var i = 0; i < this.myParticles.length; i++) {
             var ithParticle = this.myParticles[i];
             var px = ithParticle.px;
             var py = ithParticle.py;
+
+            
+            //ithParticle.addForce(gravityForcex, gravityForcey);
  
             for (var j = 0; j < i; j++) {
                 var jthParticle = this.myParticles[j];
                 var qx = jthParticle.px;
                 var qy = jthParticle.py;
                 //var mutualAttractionAmount = 10 * (ithParticle.mass + jthParticle.mass)/2;
-                var mutualAttractionAmount = ithParticle.mass * jthParticle.mass;
+                var mutualAttractionAmount = (ithParticle.mass * jthParticle.mass)/2;
  
                 var dx = px - qx;
                 var dy = py - qy;
@@ -116,7 +119,7 @@ function ParticleSystem(){
                 var attractionForcex = mutualAttractionAmount * componentInX * proportionToDistanceSquared;
                 var attractionForcey = mutualAttractionAmount * componentInY * proportionToDistanceSquared;
 
-                if (dh > (ithParticle.mass + jthParticle.mass)/2 * 1) {
+                if (dh > (ithParticle.mass + jthParticle.mass)/2 * 7) {
                     ithParticle.addForce( attractionForcex,  attractionForcey); // add in forces
                     jthParticle.addForce(-attractionForcex, -attractionForcey); // add in forces
                 }else{
@@ -129,13 +132,20 @@ function ParticleSystem(){
  
     this.updatePosition = function(){
         for (var i = 0; i < this.myParticles.length; i++) {
-            particle = this.myParticles[i];
-            particle.update();
+                particle = this.myParticles[i];
+                particle.update();
         }
     }
     this.draw = function(){
         for (var i = 0; i < this.myParticles.length; i++) {
             particle = this.myParticles[i];
+            if(sqrt(pow(width/2 - particle.px, 2) + pow(height/2 - particle.py, 2)) < miniSize/2){
+                particle.render(); // draw all particles
+            }
+        }
+
+        for (var i = 0; i < this.bigParticles.length; i++) {
+            particle = this.bigParticles[i];
             if(sqrt(pow(width/2 - particle.px, 2) + pow(height/2 - particle.py, 2)) < miniSize/2){
                 particle.render(); // draw all particles
             }
@@ -159,27 +169,32 @@ function Particle(x, y, mass){
     this.bPeriodicBoundaries=false;
     this.bElasticBoundaries=false;
     this.goalSize = mass;
+    this.answering = false;
 
     this.addForce=function(fx,fy){
-        var ax=fx/this.mass;
-        var ay=fy/this.mass;
-        this.vx+=ax;
-        this.vy+=ay;
+        var ax=fx/this.mass*1.5;
+        var ay=fy/this.mass*1.5;
+        if(this.goalSize < 30){
+            this.vx+=ax;
+            this.vy+=ay;
+        }else{
+            this.vx+=ax*.1;
+            this.vy+=ay*.1;            
+        }
     }
     this.update=function(){
         this.vx*=this.damping;
         this.vy*=this.damping;
         this.limitVelocities();
         this.handleBoundaries();
-        this.px-=this.vx;
-        this.py-=this.vy;
-        //this.mass = this.size;
+
+        //if(this.goalSize < 30){
+            this.px-=this.vx;
+            this.py-=this.vy;
+       //}
+
         if(abs(this.goalSize-this.size) > 1){
-            if(this.goalSize> this.size){
-                this.size ++;
-            }else{
-                this.size --;
-            }
+            this.size = this.size*.95 + this.goalSize*.05;
         }
     }
     this.limitVelocities=function(){
@@ -196,26 +211,58 @@ function Particle(x, y, mass){
     }
     this.handleBoundaries=function(){
         if(this.bPeriodicBoundaries){
-            if(this.px>width)this.px-=width;
-            if(this.px<0)this.px+=width;
-            if(this.py>height)this.py-=height;
-            if(this.py<0)this.py+=height;
+            if(this.px>width)
+                this.px-=width;
+            if(this.px<0)
+                this.px+=width;
+            if(this.py>height)
+                this.py-=height;
+            if(this.py<0)
+                this.py+=height;
         }else if(this.bElasticBoundaries){
-            if(this.px>width)this.vx=-this.vx;
-            if(this.px<0)this.vx=-this.vx;
-            if(this.py>height){
-                this.vy=-this.vy;if(this.py<0)this.vy=-this.vy;
+            if(sqrt(pow(width/2 - particle.px, 2) + pow(height/2 - particle.py, 2)) > miniSize/2){
+                this.vy = this.vy*-1; // draw all particles
+                this.vx = this.vx*-1;
             }
+
+
+
+            // if(this.px>width)
+            //     this.vx=-this.vx;
+            // if(this.px<0)
+            //     this.vx=+this.vx;
+            // if(this.py>height){
+            //     this.vy=-this.vy;
+            // }
+            // if(this.py<0)
+            //     this.vy=this.vy*-.5;
         }
     }
     this.render=function(){
-        if(this.goalSize < 50){
-            opacity = 70 - getDist(this.px, this.py, width/2, height/2)/2;
+
+        if(abs(this.goalSize-this.size) < 15 && this.goalSize < 20){
+           opacity = 50 -getDist(this.px, this.py, width/2, height/2) + this.size*this.size; 
+           fill(40, 140, 250, opacity);
+           ellipse(this.px,this.py,this.size,this.size);
         }else{
-            opacity = this.size * this.size;
+            if(this.answering){
+                numLayers = 5;
+            }else{
+                numLayers = 1;
+            }
+           for(j = 0; j < numLayers; j++){
+                diameter = this.size - j*5
+                r = lerp(255, 40, 1 - j*.1);
+                g = lerp(255, 140, 1 - j*.1);
+                b = lerp(255, 250, 1 - j*.1);
+
+                fill(r, g, b, 255);
+                ellipse(this.px,this.py,diameter,diameter);
+           }
+
         }
-        fill(40, 140, 250, opacity);
-        ellipse(this.px,this.py,this.size,this.size);
+        //opacity = 150 //-getDist(this.px, this.py, width/2, height/2) + this.size*this.size;
+
     }
 }
 
@@ -226,14 +273,25 @@ function getDist(x1, y1, x2, y2){
 function mousePressed(){
     for(i = 0; i < particleSystem.bigParticles.length; i++){
         particle = particleSystem.bigParticles[i];
-        particle.goalSize = 20;
+        particle.goalSize = 7;
+        particle.answering = false;
     }
 
+    particleSystem.bigParticles = [];
 
-    index = floor(random(0, particleSystem.nParticles));
-    changingParticle = particleSystem.myParticles[index];
-    changingParticle.goalSize = 50;
-    particleSystem.bigParticles.push(changingParticle);
+    for(i = 0; i < 3; i++){
+        index = floor(random(0, particleSystem.nParticles));
+        changingParticle = particleSystem.myParticles[index];
+        changingParticle.goalSize = random(70, 90);
+        particleSystem.bigParticles.push(changingParticle);
+        if(i == 2){
+            changingParticle.answering = true;
+        }
+    }
 }
+
+
+
+
 
 
