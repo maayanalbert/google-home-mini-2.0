@@ -130,7 +130,7 @@ function drawInstructions(){
     textFont("Avenir")
     textSize(20);
     fill(100);
-    text("What p5 speech recognition is hearing:", instructionsX, instructionsY);
+    text("What it is hearing (refresh browser if unresponsive):", instructionsX, instructionsY);
     fill(40, 140, 250);
     text('"' + speechRec.resultString + '"', instructionsX, instructionsY + 27);
 
