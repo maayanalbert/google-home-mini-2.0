@@ -44,10 +44,19 @@ function preload() {
 function setup(){
     angleMode(DEGREES);
     createCanvas(1425, 880);
+    voiceSystem = new VoiceSystem();
+    setupStuff()
+    //setup mic
+    mic = new p5.AudioIn()
+    mic.start();
+
+    setupScenarios();
+}
+
+function setupStuff(){
     particleSystem = new ParticleSystem();
     particleSystem.set();
 
-    voiceSystem = new VoiceSystem();
 
 
     //setup speechrec
@@ -60,12 +69,6 @@ function setup(){
     speechRec.start(continuous, interim);
     speechRec.resultString = "";
     speech.onEnd = speechEnded;
-
-    //setup mic
-    mic = new p5.AudioIn()
-    mic.start();
-
-    setupScenarios();
 
 }
 
@@ -135,7 +138,7 @@ function drawInstructions(){
     text('"' + speechRec.resultString + '"', instructionsX, instructionsY + 27);
 
     step1 = "1. Activate by saying 'OK Google' or 'Hey Google'";
-    step2 = "2. Ask it one of these questions:\n   -Where is New York?\n   -Play La La Land on Spotify\n   -Wake me up at 7\n   -When is my next appointment?";
+    step2 = "2. Ask it one of these questions:\n   -Where is New York?\n   -Wake me up at 7\n   -When is my next appointment?";
     step3 = "3. If you don't like the answer, say 'try again' or 'next answer'";
 
     fill(100, 100, 100);
@@ -151,6 +154,7 @@ function drawInstructions(){
 function handleModes(){
     if(speechRec.resultString == "OK Google" || 
         speechRec.resultString == "hey Google"){
+        setupStuff()
         currMode = "listening";
     }else if(currMode == "listening" && 
                 speechRec.resultValue && 
@@ -549,6 +553,10 @@ function keyPressed(){
         particleSystem.isVisible = true;
     }
 }
+
+
+
+
 
 
 
